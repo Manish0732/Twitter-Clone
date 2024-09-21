@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import { v2 as cloudinary } from 'cloudinary';
 
-import Notification from "../models/notification.model.js";
+import { Notification } from "../models/notification.model.js";
 import { User } from "../models/user.model.js";
 
 // get user profile
@@ -14,7 +14,7 @@ export const getUserProfile = async (req, res) => {
     res.status(200).json(user);
   } catch (error) {
     console.log("Error in getUserProfile controller" + error.message);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -53,7 +53,7 @@ export const followUnfollowUser = async (req, res) => {
     }
   } catch (error) {
     console.log("Error in followUnfollowUser controller" + error.message);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
@@ -85,7 +85,7 @@ export const getSuggestedUsers = async (req, res) => {
 
   } catch (error) {
     console.log("Error in getSuggestedUsers controller" + error.message);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: "Internal Server Error" });
   }
 }
 
@@ -119,7 +119,6 @@ export const updateUserProfile = async (req, res) => {
 
     if (profileimg) {
       if (user.profileimg) {
-        // https://res.cloudinary.com/dyfqon1v6/image/upload/v1712997552/zmxorcxexpdbh8r0bkjb.png
         await cloudinary.uploader.destroy(user.profileimg.split("/").pop().split(".")[0]);
       }
 
@@ -151,7 +150,7 @@ export const updateUserProfile = async (req, res) => {
 
     return res.status(200).json(user);
   } catch (error) {
-    console.log("Error in updateUser: ", error.message);
-    res.status(500).json({ error: error.message });
+    console.log("Error in user controller: ", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };

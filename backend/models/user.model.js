@@ -50,6 +50,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    likedPosts: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Post",
+            default: []
+        }
+    ]
     // tweets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tweet' }],
 },
     { timestamps: true }
