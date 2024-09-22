@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 
 import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from '../lib/utils/generateToken.js';
+import { mailService } from '../mailService/service.email.js';
 
 export const signup = async (req, res) => {
     try {
@@ -108,3 +109,49 @@ export const getMe = async (req, res) => {
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 };
+
+
+export const forgot = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email: email });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const OTP = Math.floor(100000 + Math.random() * 900000);
+        user.otp.value = OTP;
+        user.otp.time = Date.now();
+        await user.save();
+        await mailService(email, OTP);
+        res.status(200).json({ message: 'OTP sent successfully' });
+    } catch (error) {
+        console.log('Error in forgot controller ' + error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+export const verifyReset = async (req, res) => {
+    try {
+        const { email, OTP, newPassword } = req.body;
+        if (!OTP) return res.status(400).json({ error: 'OTP is required' });
+        const user = await User.findOne({ email: email });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (user.otp.value === null) return res.status(400).json({ error: 'User does not have OTP' });
+        if (user.otp && user.otp.time.getTime() + (1000 * 60 * 5) < Date.now()) {
+            user.otp.value = null;
+            await user.save();
+            return res.status(400).json({ error: 'OTP has expired' });
+        }
+        if (OTP.toString() !== user.otp.value.toString()) return res.status(400).json({ error: 'Invalid OTP' });
+        if (newPassword.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        user.otp.value = null;
+        await user.save();
+        res.status(200).json({ message: 'Password updated successfully' });
+
+    } catch (error) {
+        console.log("Error in verifyReset controller " + error.message);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+}

@@ -56,8 +56,17 @@ const userSchema = new mongoose.Schema({
             ref: "Post",
             default: []
         }
-    ]
-    // tweets: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Tweet' }],
+    ],
+    otp: {
+        value: {
+            type: String,
+            default: null
+        },
+        time: {
+            type: Date,
+            default: Date.now,
+        }
+    }
 },
     { timestamps: true }
 );
