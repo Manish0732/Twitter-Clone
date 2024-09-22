@@ -1,6 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-
 import { Notification } from "../models/notification.model.js";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
@@ -210,6 +209,29 @@ export const getUserPosts = async (req, res) => {
 
     } catch (error) {
         console.log("Error in get-user-Posts controller ", error.message);
+        res.status(500).json({ error: "Internal Server Error" });
+    }
+}
+
+export const deleteComment = async (req, res) => {
+    try {
+        const postId = req.params.postId;
+        const commentId = req.params.commentId;
+        const userId = req.user._id;
+
+        const post = await Post.findById(postId);
+        if (!post) return res.status(404).json({ error: 'Post not found' });
+
+        const comment = post.comments.find(comment => comment._id.toString() === commentId);
+        if (!comment) return res.status(404).json({ error: 'Comment not found' });
+
+        if (comment.user.toString() !== userId.toString()) return res.status(401).json({ error: 'You are not authorized to delete this comment' });
+
+        await Post.updateOne({ _id: postId }, { $pull: { comments: { _id: commentId } } });
+        res.status(200).json({ message: 'Comment deleted successfully' });
+
+    } catch (error) {
+        console.log("Error in deleteComment controller ", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
 }
