@@ -4,6 +4,7 @@ import { User } from "../models/user.model.js";
 import { generateTokenAndSetCookie } from '../lib/utils/generateToken.js';
 import { mailService } from '../mailService/service.email.js';
 
+// register user with correct information
 export const signup = async (req, res) => {
     try {
         const { fullname, username, email, password } = req.body;
@@ -61,6 +62,7 @@ export const signup = async (req, res) => {
     }
 };
 
+// login user with correct credentials
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -90,6 +92,7 @@ export const login = async (req, res) => {
     }
 };
 
+// logout user (destroy cookie )
 export const logout = async (req, res) => {
     try {
         res.cookie('jwt', '', { maxAge: 0 })
@@ -100,9 +103,10 @@ export const logout = async (req, res) => {
     }
 };
 
+// get logged userInfo
 export const getMe = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('-password');
+        const user = await User.findById(req.user._id).select('-password -otp');
         res.status(200).json(user);
     } catch (error) {
         console.log('Error in getMe controller ' + error.message);
@@ -110,7 +114,7 @@ export const getMe = async (req, res) => {
     }
 };
 
-
+// generate otp
 export const forgot = async (req, res) => {
     try {
         const { email } = req.body;
@@ -129,6 +133,7 @@ export const forgot = async (req, res) => {
     }
 }
 
+//set new password
 export const verifyReset = async (req, res) => {
     try {
         const { email, OTP, newPassword } = req.body;

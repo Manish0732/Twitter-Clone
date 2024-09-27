@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import axios from 'axios';
+import toast from 'react-hot-toast'
 
 import XSvg from "../../../components/svgs/X";
 
 import { FaAt } from "react-icons/fa";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 import { MdPassword } from "react-icons/md";
 
 const LoginPage = () => {
@@ -12,16 +16,38 @@ const LoginPage = () => {
 		password: "",
 	});
 
+	const [showPassword, setShowPassword] = useState(false);
+
+	const queryClient = useQueryClient();
+
+	const { mutate: loginMutation, isError, isPending, error } = useMutation({
+		mutationFn: async ({ username, password }) => {
+			try {
+				const res = await axios.post('/api/auth/login', { username, password });
+				return res.data;
+			} catch (error) {
+				console.error(error.response.data.error || error);
+				throw new Error(error.response.data.error || "Something went wrong");
+			}
+		},
+		onSuccess: () => {
+			toast.success("Logged In")
+			queryClient.invalidateQueries({ queryKey: ['authUser'] });
+		}
+	})
+
 	const handleSubmit = (e) => {
 		e.preventDefault();
-		console.log(formData);
+		loginMutation(formData);
 	};
 
 	const handleInputChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
 
-	const isError = false;
+	const toggleShowPassword = () => {
+		setShowPassword((prevState) => !prevState)
+	}
 
 	return (
 		<div className='max-w-screen-xl mx-auto flex h-screen'>
@@ -41,22 +67,32 @@ const LoginPage = () => {
 							name='username'
 							onChange={handleInputChange}
 							value={formData.username}
+							required
 						/>
 					</label>
 
 					<label className='input input-bordered rounded flex items-center gap-2'>
 						<MdPassword />
 						<input
-							type='password'
+							type={showPassword ? 'text' : 'password'}
 							className='grow'
 							placeholder='Password'
 							name='password'
 							onChange={handleInputChange}
 							value={formData.password}
+							required
+							minLength='6'
 						/>
+						{
+							showPassword
+								? <IoMdEyeOff onClick={toggleShowPassword} />
+								: <IoMdEye onClick={toggleShowPassword} />
+						}
 					</label>
-					<button className='btn rounded-full btn-primary text-white'>Login</button>
-					{isError && <p className='text-red-500'>Something went wrong</p>}
+					<button className='btn rounded-full btn-primary text-white'>
+						{isPending ? "Loading..." : "Sign In"}
+					</button>
+					{isError && <p className='text-red-500'>{error.message}</p>}
 				</form>
 				<div className='flex flex-col gap-2 mt-4'>
 					<p className='text-white text-lg'>{"Don't"} have an account?</p>

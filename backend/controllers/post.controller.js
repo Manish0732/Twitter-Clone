@@ -4,13 +4,14 @@ import { Notification } from "../models/notification.model.js";
 import { Post } from "../models/post.model.js";
 import { User } from "../models/user.model.js";
 
+// create post with valid content(text/img)
 export const createPost = async (req, res) => {
     try {
         const { text } = req.body;
         let { img } = req.body;
         const userId = req.user._id.toString();
 
-        const user = await User.findById(userId).select('-password');
+        const user = await User.findById(userId).select('-password -otp');
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         if (!text && !img) return res.status(400).json({ error: 'Post must have text or image' });
@@ -36,6 +37,7 @@ export const createPost = async (req, res) => {
 
 }
 
+// delete particular post
 export const deletePost = async (req, res) => {
     try {
         const post = await Post.findById(req.params.id);
@@ -57,6 +59,8 @@ export const deletePost = async (req, res) => {
     }
 }
 
+
+// comment on post
 export const commentOnPost = async (req, res) => {
     try {
         const { text } = req.body;
@@ -79,6 +83,7 @@ export const commentOnPost = async (req, res) => {
     }
 }
 
+//  like/unlike post
 export const likeUnlikepost = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -116,17 +121,19 @@ export const likeUnlikepost = async (req, res) => {
     }
 }
 
+
+// get all post in database sorted by date-time(latest first)
 export const getAllPosts = async (req, res) => {
     try {
 
         const posts = await Post.find().sort({ createdAt: -1 }).populate(
             {
                 path: "user",
-                select: '-password'
+                select: '-password -otp'
             })
             .populate({
                 path: 'comments.user',
-                select: '-password'
+                select: '-password -otp'
             })
 
         if (posts.length === 0) return res.status(200).json({ message: "Posts Not found" });
@@ -138,6 +145,7 @@ export const getAllPosts = async (req, res) => {
     }
 }
 
+// get all liked posts
 export const getLikedPosts = async (req, res) => {
     try {
         const userId = req.params.id;
@@ -147,11 +155,11 @@ export const getLikedPosts = async (req, res) => {
         const likedPosts = await Post.find({ _id: { $in: user.likedPosts } }).populate(
             {
                 path: "user",
-                select: '-password'
+                select: '-password -otp'
             })
             .populate({
                 path: 'comments.user',
-                select: '-password'
+                select: '-password -otp'
             });
 
         res.status(200).json(likedPosts);
@@ -161,7 +169,7 @@ export const getLikedPosts = async (req, res) => {
         res.status(500).json({ error: 'Internal Server error' });
     }
 }
-
+// get post from following only
 export const getFollowingPosts = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -173,11 +181,11 @@ export const getFollowingPosts = async (req, res) => {
             .sort({ createdAt: -1 })
             .populate({
                 path: "user",
-                select: "-password"
+                select: "-password -otp"
             })
             .populate({
                 path: "comments.user",
-                select: "-password"
+                select: "-password -otp"
             })
 
         res.status(200).json(feedPosts);
@@ -188,6 +196,7 @@ export const getFollowingPosts = async (req, res) => {
     }
 }
 
+// get logged in user's post 
 export const getUserPosts = async (req, res) => {
     try {
         const { username } = req.params;
@@ -197,11 +206,11 @@ export const getUserPosts = async (req, res) => {
             .sort({ createdAt: -1 })
             .populate({
                 path: 'user',
-                select: '-password'
+                select: '-password -otp'
             })
             .populate({
                 path: 'comments.user',
-                select: '-password'
+                select: '-password -otp'
             })
         if (!userPosts) return res.status(200).josn({ message: "User did not posted anything" });
 
@@ -213,6 +222,7 @@ export const getUserPosts = async (req, res) => {
     }
 }
 
+// delete comment on post
 export const deleteComment = async (req, res) => {
     try {
         const postId = req.params.postId;

@@ -8,7 +8,7 @@ import { User } from "../models/user.model.js";
 export const getUserProfile = async (req, res) => {
   try {
     const { username } = req.params;
-    const user = await User.findOne({ username }).select("password");
+    const user = await User.findOne({ username }).select("-password -otp");
     if (!user) return res.status(404).json({ error: "User not found" });
 
     res.status(200).json(user);
@@ -89,9 +89,8 @@ export const getSuggestedUsers = async (req, res) => {
   }
 }
 
+
 // update user profile
-
-
 export const updateUserProfile = async (req, res) => {
   const { fullname, email, username, currentPassword, newPassword, bio, link } = req.body;
   let { profileimg, coverimg } = req.body;
