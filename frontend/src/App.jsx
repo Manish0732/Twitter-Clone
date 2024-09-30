@@ -4,6 +4,8 @@ import LoginPage from "./pages/auth/login/LoginPage"
 import HomePage from "./pages/home/HomePage"
 import NotificationPage from "./pages/notification/NotificationPage"
 import ProfilePage from "./pages/profile/ProfilePage"
+import ForgotPage from "./pages/auth/forget/ForgotPage"
+import ResetPassword from "./pages/auth/forget/ResetPassword"
 
 import Sidebar from "./components/common/Sidebar"
 import RightPanel from "./components/common/RightPanel"
@@ -23,7 +25,6 @@ function App() {
         const data = await res.json();
         if (data.error) return null;
         if (!res.ok) throw new Error(data.error || "Something went wrong")
-        console.log("AuthUser =====> ", data);
         return data;
       } catch (error) {
         throw new Error(error);
@@ -47,7 +48,9 @@ function App() {
       <Routes>
         <Route path="/" element={authUser ? <HomePage /> : <Navigate to={'/login'} />} />
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to={'/'} />} />
-        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to={'/login'} />} />
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to={'/'} />} />
+        <Route path="/forgot" element={<ForgotPage />} />
+        <Route path="/verify-reset" element={<ResetPassword />} />
         <Route path="/notifications" element={authUser ? <NotificationPage /> : <Navigate to={'/login'} />} />
         <Route path="/profile/:username" element={authUser ? <ProfilePage /> : <Navigate to={'/login'} />} />
       </Routes>

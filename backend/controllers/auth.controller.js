@@ -118,6 +118,8 @@ export const getMe = async (req, res) => {
 export const forgot = async (req, res) => {
     try {
         const { email } = req.body;
+        const emailregex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailregex.test(email)) return res.status(400).json({ error: 'Invalid email address' });
         const user = await User.findOne({ email: email });
         if (!user) return res.status(404).json({ error: 'User not found' });
 
@@ -125,8 +127,10 @@ export const forgot = async (req, res) => {
         user.otp.value = OTP;
         user.otp.time = Date.now();
         await user.save();
+        user.password = undefined;
+        user.otp = undefined;
         await mailService(email, OTP);
-        res.status(200).json({ message: 'OTP sent successfully' });
+        res.status(200).json({ message: 'OTP sent successfully', user });
     } catch (error) {
         console.log('Error in forgot controller ' + error.message);
         res.status(500).json({ error: 'Internal Server Error' });

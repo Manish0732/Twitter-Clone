@@ -93,11 +93,17 @@ const LoginPage = () => {
 						{isPending ? "Loading..." : "Sign In"}
 					</button>
 					{isError && <p className='text-red-500'>{error.message}</p>}
+
 				</form>
 				<div className='flex flex-col gap-2 mt-4'>
-					<p className='text-white text-lg'>{"Don't"} have an account?</p>
+					<p className='text-white font-bold '>{"Don't"} have an account?</p>
 					<Link to='/signup'>
 						<button className='btn rounded-full btn-primary text-white btn-outline w-full'>Sign up</button>
+					</Link>
+				</div>
+				<div className='flex flex-col gap-2 mt-4'>
+					<Link to='/forgot' className='hover:text-blue-400 text-center font-bold text-sm'>
+						Forgot Password?
 					</Link>
 				</div>
 			</div>
