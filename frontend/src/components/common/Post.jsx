@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 
 import { useQueryClient, useMutation, useQuery } from '@tanstack/react-query'
 import axios from 'axios'
-import toast, { LoaderIcon } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 
 import LoadingSpinner from "./LoadingSpinner"
 
