@@ -1,6 +1,5 @@
 import Post from "./Post";
 import PostSkeleton from "../skeletons/PostSkeleton";
-// import { POSTS } from "../../utils/db/dummy";
 
 import { useQuery } from "@tanstack/react-query";
 import axios from 'axios'
@@ -11,11 +10,11 @@ const Posts = ({ feedType }) => {
 	const getPostEndpoint = () => {
 		switch (feedType) {
 			case "forYou":
-				return "api/posts/all";
+				return "/api/posts/all";
 			case "following":
-				return "api/posts/following";
+				return "/api/posts/following";
 			default:
-				return "api/posts/all";
+				return "/api/posts/all";
 		}
 	};
 
