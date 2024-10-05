@@ -79,7 +79,7 @@ export const getSuggestedUsers = async (req, res) => {
     const filteredUsers = users.filter((user) => !usersFollowedByMe.following.includes(user._id));
     const suggestedUsers = filteredUsers.slice(0, 4);
 
-    suggestedUsers.forEach((user) => { user.password = null });
+    suggestedUsers.forEach((user) => { user.password = undefined; user.otp = undefined });
 
     res.status(200).json(suggestedUsers);
 
@@ -145,7 +145,8 @@ export const updateUserProfile = async (req, res) => {
     user = await user.save();
 
     // password should be null in response
-    user.password = null;
+    user.password = undefined;
+    user.otp = undefined;
 
     return res.status(200).json(user);
   } catch (error) {

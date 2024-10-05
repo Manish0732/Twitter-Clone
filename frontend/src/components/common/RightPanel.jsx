@@ -1,8 +1,10 @@
 import { Link } from "react-router-dom";
 import RightPanelSkeleton from "../skeletons/RightPanelSkeleton";
+import useFollow from "../../hooks/useFollow";
 
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
+import LoadingSpinner from "./LoadingSpinner";
 
 
 const RightPanel = () => {
@@ -18,7 +20,9 @@ const RightPanel = () => {
 			}
 		}
 	})
-	
+
+	const { follow, isPending } = useFollow();
+
 	if (suggestedUsers?.length === 0) return <div className='md:w-64 w-0'></div>;
 
 	return (
@@ -45,7 +49,7 @@ const RightPanel = () => {
 								<div className='flex gap-2 items-center'>
 									<div className='avatar'>
 										<div className='w-8 rounded-full'>
-											<img src={user.profileImg || "/avatar-placeholder.png"} />
+											<img src={user.profileimg || "/avatar-placeholder.png"} />
 										</div>
 									</div>
 									<div className='flex flex-col'>
@@ -57,17 +61,20 @@ const RightPanel = () => {
 								</div>
 								<div>
 									<button
-										className='btn bg-white text-black hover:bg-white hover:opacity-90 rounded-full btn-sm'
-										onClick={(e) => e.preventDefault()}
+										className='btn bg-slate-300 hover:bg-slate-50 text-black border-none rounded-full btn-sm'
+										onClick={(e) => {
+											e.preventDefault()
+											follow(user._id);
+										}}
 									>
-										Follow
+										{isPending ? <LoadingSpinner size='sm' /> : "Follow"}
 									</button>
 								</div>
 							</Link>
 						))}
 				</div>
 			</div>
-		</div>
+		</div >
 	);
 };
 export default RightPanel;
