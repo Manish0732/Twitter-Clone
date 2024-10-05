@@ -43,7 +43,7 @@ const Post = ({ post }) => {
 				throw new Error(error.response.data.error || error)
 			}
 		},
-		onSuccess: ( updatedLikes ) => {
+		onSuccess: (updatedLikes) => {
 			queryClient.setQueryData(["posts"], (oldData) => {
 				return oldData.map((p) => {
 					if (p._id === post._id) {
@@ -58,14 +58,57 @@ const Post = ({ post }) => {
 		}
 	})
 
+	const { mutate: commentPost, isPending: isCommenting } = useMutation({
+		mutationFn: async (text) => {
+			try {
+				const res = await axios.post(`/api/posts/comment/${post._id}`, { text })
+				return res.data;
+			} catch (error) {
+				throw new Error(error.response.data.error || "Something Went Wrong")
+			}
+		},
+		onSuccess: async (updatedPost) => {
+			await queryClient.setQueryData(["posts"], (oldData) => {
+				return oldData.map((p) => {
+					if (p._id === post._id) {
+						return updatedPost;
+					}
+					return p;
+				})
+			})
+			document.getElementById(`closeCommentModal${post._id}`).click();
+			setComment("")
+		}
+	});
+
+	const { mutate: deleteComment, isPending: isDeletingComment } = useMutation({
+		mutationFn: async (commentId) => {
+			try {
+				const res = await axios.delete(`/api/posts/${post._id}/${commentId}`);
+				return res.data
+			} catch (error) {
+				throw new Error(error.response.data.error || "Something Went wrong")
+			}
+		},
+		onSuccess: async (updatedPost) => {
+			await queryClient.setQueryData(["posts"], (oldData) => {
+				return oldData.map((p) => {
+					if (p._id === post._id) {
+						return updatedPost;
+					}
+					return p;
+				})
+			})
+			document.getElementById(`closeCommentModal${post._id}`).click();
+		}
+	})
+
 	const postOwner = post.user;
-	const isLiked = post.likes.includes(authUser._id);
+	const isLiked = post.likes?.includes(authUser._id);
 
 	const isMyPost = authUser._id === post.user._id;
-
 	const formattedDate = "1h";
 
-	const isCommenting = false;
 
 	const handleDeletePost = () => {
 		deletePost()
@@ -73,7 +116,14 @@ const Post = ({ post }) => {
 
 	const handlePostComment = (e) => {
 		e.preventDefault();
+		if (isCommenting) return;
+		commentPost(comment);
 	};
+
+	const handleDeleteComment = (commentId) => {
+		if (isDeletingComment) return;
+		deleteComment(commentId)
+	}
 
 	const handleLikePost = () => {
 		if (isLiking) return;
@@ -147,11 +197,18 @@ const Post = ({ post }) => {
 													</div>
 												</div>
 												<div className='flex flex-col'>
-													<div className='flex items-center gap-1'>
+													<div className='flex flex-row items-center gap-1 w-full'>
 														<span className='font-bold'>{comment.user.fullname}</span>
 														<span className='text-gray-700 text-sm'>
 															@{comment.user.username}
 														</span>
+														{(authUser._id === comment.user._id || authUser._id === post.user._id) && (
+															<span className='absolute right-5'>
+																{isDeletingComment ?
+																	<span className="loading loading-Spinner loading-sm"></span> :
+																	<FaTrash className='cursor-pointer hover:text-red-500' onClick={() => handleDeleteComment(comment._id)} />}
+															</span>
+														)}
 													</div>
 													<div className='text-sm'>{comment.text}</div>
 												</div>
@@ -178,7 +235,7 @@ const Post = ({ post }) => {
 									</form>
 								</div>
 								<form method='dialog' className='modal-backdrop'>
-									<button className='outline-none'>close</button>
+									<button className='outline-none' id={`closeCommentModal${post._id}`}>close</button>
 								</form>
 							</dialog>
 							<div className='flex gap-1 items-center group cursor-pointer'>

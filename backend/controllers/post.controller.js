@@ -74,8 +74,17 @@ export const commentOnPost = async (req, res) => {
         const comment = { user: userId, text }
         post.comments.push(comment);
         await post.save();
-
-        res.status(200).json(post);
+        const updatedPost = await Post.findById(postId)
+            .populate(
+                {
+                    path: "user",
+                    select: '-password -otp'
+                })
+            .populate({
+                path: 'comments.user',
+                select: '-password -otp'
+            });
+        res.status(200).json(updatedPost);
 
     } catch (error) {
         console.log('Error in post controller (Comment On Post) ', error.message);
@@ -238,10 +247,23 @@ export const deleteComment = async (req, res) => {
         const comment = post.comments.find(comment => comment._id.toString() === commentId);
         if (!comment) return res.status(404).json({ error: 'Comment not found' });
 
-        if (comment.user.toString() !== userId.toString()) return res.status(401).json({ error: 'You are not authorized to delete this comment' });
-
+        if (comment.user.toString() !== userId.toString() && post.user.toString() !== userId.toString()) {
+            return res.status(401).json({ error: 'You are not authorized to delete this comment' });
+        }
         await Post.updateOne({ _id: postId }, { $pull: { comments: { _id: commentId } } });
-        res.status(200).json({ message: 'Comment deleted successfully' });
+
+        const updatedPost = await Post.findById(postId)
+            .populate(
+                {
+                    path: "user",
+                    select: '-password -otp'
+                })
+            .populate({
+                path: 'comments.user',
+                select: '-password -otp'
+            });
+
+        res.status(200).json(updatedPost);
 
     } catch (error) {
         console.log("Error in deleteComment controller ", error.message);
