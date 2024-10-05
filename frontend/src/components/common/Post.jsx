@@ -23,16 +23,18 @@ const Post = ({ post }) => {
 		mutationFn: async () => {
 			try {
 				const res = await axios.delete(`api/posts/${post._id}`);
-
 				return res.data;
 
 			} catch (error) {
-				throw new Error(error);
+				throw new Error(error.response.data.error || "something went wrong");
 			}
 		},
 		onSuccess: () => {
 			toast.success('Post deleted successfully');
 			queryClient.invalidateQueries({ queryKey: ["posts"] })
+		},
+		onError: (error) => {
+			toast.error(error)
 		}
 	})
 
@@ -82,6 +84,9 @@ const Post = ({ post }) => {
 			})
 			document.getElementById(`closeCommentModal${post._id}`).click();
 			setComment("")
+		},
+		onError: (error) => {
+			toast.error(error)
 		}
 	});
 
@@ -105,6 +110,9 @@ const Post = ({ post }) => {
 				})
 			})
 			document.getElementById(`closeCommentModal${post._id}`).click();
+		},
+		onError: (error) => {
+			toast.error(error)
 		}
 	})
 
