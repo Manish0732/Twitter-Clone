@@ -11,12 +11,14 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 
 import LoadingSpinner from "./LoadingSpinner"
+import { formatPostDate } from "../../utils/date";
 
 const Post = ({ post }) => {
 	const [comment, setComment] = useState("");
 	const { data: authUser } = useQuery({ queryKey: ['authUser'] });
 	const queryClient = useQueryClient();
 
+	// delete post 
 	const { mutate: deletePost, isPending: isDeleting } = useMutation({
 		mutationFn: async () => {
 			try {
@@ -34,6 +36,7 @@ const Post = ({ post }) => {
 		}
 	})
 
+	// like/unlike post 
 	const { mutate: likePost, isPending: isLiking } = useMutation({
 		mutationFn: async () => {
 			try {
@@ -58,6 +61,7 @@ const Post = ({ post }) => {
 		}
 	})
 
+	// comment on post
 	const { mutate: commentPost, isPending: isCommenting } = useMutation({
 		mutationFn: async (text) => {
 			try {
@@ -81,6 +85,7 @@ const Post = ({ post }) => {
 		}
 	});
 
+	// delete comment
 	const { mutate: deleteComment, isPending: isDeletingComment } = useMutation({
 		mutationFn: async (commentId) => {
 			try {
@@ -107,7 +112,7 @@ const Post = ({ post }) => {
 	const isLiked = post.likes?.includes(authUser._id);
 
 	const isMyPost = authUser._id === post.user._id;
-	const formattedDate = "1h";
+	const formattedDate = formatPostDate(post.createdAt);
 
 
 	const handleDeletePost = () => {
