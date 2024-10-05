@@ -1,6 +1,6 @@
 import { FaRegComment } from "react-icons/fa";
 import { BiRepost } from "react-icons/bi";
-import { FaRegHeart } from "react-icons/fa";
+import { IoMdHeart } from "react-icons/io";
 import { IoBookmark } from "react-icons/io5";
 import { FaTrash } from "react-icons/fa";
 import { useState } from "react";
@@ -17,7 +17,7 @@ const Post = ({ post }) => {
 	const { data: authUser } = useQuery({ queryKey: ['authUser'] });
 	const queryClient = useQueryClient();
 
-	const { mutate: deletePost, isPending } = useMutation({
+	const { mutate: deletePost, isPending: isDeleting } = useMutation({
 		mutationFn: async () => {
 			try {
 				const res = await axios.delete(`api/posts/${post._id}`);
@@ -34,9 +34,32 @@ const Post = ({ post }) => {
 		}
 	})
 
+	const { mutate: likePost, isPending: isLiking } = useMutation({
+		mutationFn: async () => {
+			try {
+				const res = await axios.post(`/api/posts/like/${post._id}`);
+				return res.data;
+			} catch (error) {
+				throw new Error(error.response.data.error || error)
+			}
+		},
+		onSuccess: ( updatedLikes ) => {
+			queryClient.setQueryData(["posts"], (oldData) => {
+				return oldData.map((p) => {
+					if (p._id === post._id) {
+						return { ...p, likes: updatedLikes };
+					}
+					return p;
+				})
+			})
+		},
+		onError: (error) => {
+			toast.error(error.message)
+		}
+	})
 
 	const postOwner = post.user;
-	const isLiked = false;
+	const isLiked = post.likes.includes(authUser._id);
 
 	const isMyPost = authUser._id === post.user._id;
 
@@ -52,14 +75,17 @@ const Post = ({ post }) => {
 		e.preventDefault();
 	};
 
-	const handleLikePost = () => { };
+	const handleLikePost = () => {
+		if (isLiking) return;
+		likePost();
+	};
 
 	return (
 		<>
 			<div className='flex gap-2 items-start p-4 border-b border-gray-700'>
 				<div className='avatar'>
 					<Link to={`/profile/${postOwner.username}`} className='w-8 rounded-full overflow-hidden'>
-						<img src={postOwner.profileImg || "/avatar-placeholder.png"} />
+						<img src={postOwner.profileimg || "/avatar-placeholder.png"} />
 					</Link>
 				</div>
 				<div className='flex flex-col flex-1'>
@@ -74,7 +100,7 @@ const Post = ({ post }) => {
 						</span>
 						{isMyPost && (
 							<span className='flex justify-end flex-1'>
-								{isPending ?
+								{isDeleting ?
 									<LoadingSpinner size="loading-sm" /> :
 									<FaTrash className='cursor-pointer hover:text-red-500' onClick={handleDeletePost} />}
 							</span>
@@ -116,7 +142,7 @@ const Post = ({ post }) => {
 												<div className='avatar'>
 													<div className='w-8 rounded-full'>
 														<img
-															src={comment.user.profileImg || "/avatar-placeholder.png"}
+															src={comment.user.profileimg || "/avatar-placeholder.png"}
 														/>
 													</div>
 												</div>
@@ -160,10 +186,11 @@ const Post = ({ post }) => {
 								<span className='text-sm text-slate-500 group-hover:text-green-500'>0</span>
 							</div>
 							<div className='flex gap-1 items-center group cursor-pointer' onClick={handleLikePost}>
-								{!isLiked && (
-									<FaRegHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
+								{isLiking && <span className="loading loading-spinner loading-xs"></span>}
+								{!isLiked && !isLiking && (
+									<IoMdHeart className='w-4 h-4 cursor-pointer text-slate-500 group-hover:text-pink-500' />
 								)}
-								{isLiked && <FaRegHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />}
+								{isLiked && !isLiking && <IoMdHeart className='w-4 h-4 cursor-pointer text-pink-500 ' />}
 
 								<span
 									className={`text-sm text-slate-500 group-hover:text-pink-500 ${isLiked ? "text-pink-500" : ""
