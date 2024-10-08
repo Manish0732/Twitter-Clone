@@ -11,10 +11,12 @@ import { FaArrowLeft } from "react-icons/fa6";
 import { IoCalendarOutline } from "react-icons/io5";
 import { FaLink } from "react-icons/fa";
 import { MdEdit } from "react-icons/md";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import useFollow from "../../hooks/useFollow";
 import { formatMemberSinceDate } from "../../utils/date";
+import toast from "react-hot-toast";
+import useUpdateProfile from "../../hooks/useUpdateProfile";
 
 const ProfilePage = () => {
 	const [coverimg, setcoverimg] = useState(null);
@@ -28,6 +30,7 @@ const ProfilePage = () => {
 	const { follow, isPending } = useFollow()
 	const { data: authUser } = useQuery({ queryKey: ["authUser"] });
 
+
 	const { data: user, isLoading, refetch, isRefetching } = useQuery({
 		queryKey: ["userProfile"],
 		queryFn: async () => {
@@ -39,8 +42,9 @@ const ProfilePage = () => {
 			}
 		}
 	})
-	const isMyProfile = authUser._id === user?._id;
-	const amIFollowing = authUser?.following.includes(user?._id);
+
+	const { updateProfile, isUpdatingProfile } = useUpdateProfile();
+
 	const handleImgChange = (e, state) => {
 		const file = e.target.files[0];
 		if (file) {
@@ -54,6 +58,8 @@ const ProfilePage = () => {
 	};
 
 
+	const isMyProfile = authUser._id === user?._id;
+	const amIFollowing = authUser?.following.includes(user?._id);
 	const memberSince = formatMemberSinceDate(user?.createdAt)
 
 
@@ -125,7 +131,7 @@ const ProfilePage = () => {
 								</div>
 							</div>
 							<div className='flex justify-end px-4 mt-5'>
-								{isMyProfile && <EditProfileModal />}
+								{isMyProfile && <EditProfileModal authUser={authUser} />}
 								{!isMyProfile && (
 									<button
 										className='btn bg-slate-300 hover:bg-slate-50 text-black border-none rounded-full btn-sm'
@@ -139,9 +145,13 @@ const ProfilePage = () => {
 								{(coverimg || profileimg) && (
 									<button
 										className='btn btn-primary rounded-full btn-sm text-white px-4 ml-2'
-										onClick={() => alert("Profile updated successfully")}
+										onClick={async () => {
+											await updateProfile({ coverimg, profileimg })
+											setcoverimg(null)
+											setprofileimg(null)
+										}}
 									>
-										Update
+										{isUpdatingProfile ? `Updating...` : `Update`}
 									</button>
 								)}
 							</div>

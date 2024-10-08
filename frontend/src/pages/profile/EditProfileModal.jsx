@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useUpdateProfile from "../../hooks/useUpdateProfile";
+import { IoMdEye, IoMdEyeOff } from "react-icons/io";
 
-const EditProfileModal = () => {
+const EditProfileModal = ({ authUser }) => {
 	const [formData, setFormData] = useState({
-		fullName: "",
+		fullname: "",
 		username: "",
 		email: "",
 		bio: "",
@@ -11,9 +13,32 @@ const EditProfileModal = () => {
 		currentPassword: "",
 	});
 
+	const [showPassword, setShowPassword] = useState(false);
+
 	const handleInputChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 	};
+
+	const { updateProfile, isUpdatingProfile } = useUpdateProfile()
+
+	useEffect(() => {
+		if (authUser) {
+			setFormData({
+				fullname: authUser.fullname,
+				username: authUser.username,
+				email: authUser.email,
+				bio: authUser.bio,
+				link: authUser.link,
+				currentPassword: "",
+				newPassword: ""
+			})
+		}
+	}, [authUser])
+
+
+	const toggleShowPassword = () => {
+		setShowPassword((prevState) => !prevState)
+	}
 
 	return (
 		<>
@@ -30,7 +55,7 @@ const EditProfileModal = () => {
 						className='flex flex-col gap-4'
 						onSubmit={(e) => {
 							e.preventDefault();
-							alert("Profile updated successfully");
+							updateProfile(formData)
 						}}
 					>
 						<div className='flex flex-wrap gap-2'>
@@ -38,8 +63,8 @@ const EditProfileModal = () => {
 								type='text'
 								placeholder='Full Name'
 								className='flex-1 input border border-gray-700 rounded p-2 input-md'
-								value={formData.fullName}
-								name='fullName'
+								value={formData.fullname}
+								name='fullname'
 								onChange={handleInputChange}
 							/>
 							<input
@@ -69,22 +94,34 @@ const EditProfileModal = () => {
 							/>
 						</div>
 						<div className='flex flex-wrap gap-2'>
-							<input
-								type='password'
-								placeholder='Current Password'
-								className='flex-1 input border border-gray-700 rounded p-2 input-md'
-								value={formData.currentPassword}
-								name='currentPassword'
-								onChange={handleInputChange}
-							/>
-							<input
-								type='password'
-								placeholder='New Password'
-								className='flex-1 input border border-gray-700 rounded p-2 input-md'
-								value={formData.newPassword}
-								name='newPassword'
-								onChange={handleInputChange}
-							/>
+							<label className='flex items-center input border border-gray-700 rounded px-3 input-md'>
+								<input
+									type={showPassword ? 'text' : 'password'}
+									placeholder='Current Password'
+									value={formData.currentPassword}
+									name='currentPassword'
+									onChange={handleInputChange}
+								/>
+								{
+									showPassword
+										? <IoMdEyeOff className="ml-1 text-lg" onClick={toggleShowPassword} />
+										: <IoMdEye className="ml-1 text-lg" onClick={toggleShowPassword} />
+								}
+							</label>
+							<label className='flex items-center input border border-gray-700 rounded px-3 input-md'>
+								<input
+									type={showPassword ? 'text' : 'password'}
+									placeholder='New Password'
+									value={formData.newPassword}
+									name='newPassword'
+									onChange={handleInputChange}
+								/>
+								{
+									showPassword
+										? <IoMdEyeOff className="ml-1 text-lg" onClick={toggleShowPassword} />
+										: <IoMdEye className="ml-1 text-lg" onClick={toggleShowPassword} />
+								}
+							</label>
 						</div>
 						<input
 							type='text'
@@ -94,13 +131,15 @@ const EditProfileModal = () => {
 							name='link'
 							onChange={handleInputChange}
 						/>
-						<button className='btn btn-primary rounded-full btn-sm text-white'>Update</button>
+						<button className='btn btn-primary rounded-full btn-sm text-white'>
+							{isUpdatingProfile ? 'Updating...' : 'Update'}
+						</button>
 					</form>
-				</div>
+				</div >
 				<form method='dialog' className='modal-backdrop'>
 					<button className='outline-none'>close</button>
 				</form>
-			</dialog>
+			</dialog >
 		</>
 	);
 };
