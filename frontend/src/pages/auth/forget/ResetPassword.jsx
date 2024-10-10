@@ -118,11 +118,11 @@ const ResetPassword = () => {
                     <button className='btn rounded-full btn-primary text-white'>
                         {isPending ? "Loading..." : "Verify & Change Password"}
                     </button>
-                    {isError && <p className='text-red-500'>{error.message}</p>}
+                    {isError && <p className='text-red-500 text-center'>{error.message}</p>}
                 </form>
                 <div className='flex flex-col gap-2 mt-4'>
                     <Link to='/login'>
-                        <button className='hover:text-blue-400 font-bold rounded-full  w-full'>Sign In</button>
+                        <button className='hover:text-blue-400 font-bold rounded-full w-full'>Sign In</button>
                     </Link>
                 </div>
             </div>

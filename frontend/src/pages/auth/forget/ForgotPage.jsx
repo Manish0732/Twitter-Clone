@@ -63,7 +63,7 @@ const ForgotPage = () => {
                     <button className='btn rounded-full btn-primary text-white'>
                         {isPending ? "Loading..." : "Generate OTP"}
                     </button>
-                    {isError && <p className='text-red-500'>{error.message}</p>}
+                    {isError && <p className='text-red-500 text-center'>{error.message}</p>}
                 </form>
                 <div className='flex flex-col gap-2 mt-4'>
                     <Link to='/login'>
