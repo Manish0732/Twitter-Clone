@@ -16,6 +16,10 @@ A full-stack Twitter-like web application built using the MERN stack (MongoDB, E
 - **Backend:** Node.js, Express.js, Mongoose, JWT
 - **Database:** MongoDB
 
+## Live Demo
+Check out the live version: [Twitter Clone](https://twitter-clone-tdwg.onrender.com/)  Might take some time to load. 
+
+
 ## Getting Started
 
 ### 1. Prerequisites
